@@ -1,0 +1,26 @@
+{
+  "name": "hue-research-timestamp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hue Research Timestamp (HRT) - Hệ thống đóng dấu thời gian và xác thực quyền tác giả nghiên cứu khoa học trên Blockchain cho sinh viên và giảng viên Đại học Huế (Hue University)",
+  "scripts": {
+    "test": "node test/ProjectCore.test.js"
+  },
+  "keywords": [
+    "blockchain",
+    "web3",
+    "ethereum",
+    "timestamp",
+    "research-proof",
+    "hue",
+    "hue-university"
+  ],
+  "author": "Hue Research Timestamp Team",
+  "license": "MIT",
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.0"
+  },
+  "devDependencies": {
+    "ethers": "^6.13.2"
+  }
+}
