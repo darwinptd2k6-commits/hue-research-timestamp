@@ -1,141 +1,51 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-/**
- * @title ProjectCore
- * @notice Hợp đồng quản lý dấu thời gian ý tưởng nghiên cứu khoa học (Hue Research Timestamp)
- *         theo mô hình RecordRegistry (M.3) của môn học ECO2432.
- * @dev Tuân thủ nghiêm ngặt quy chuẩn kiểm toán bảo mật và tối ưu gas:
- *      1. Checks-Effects-Interactions (CEI): Kiểm tra điều kiện -> Cập nhật trạng thái -> Phát sự kiện.
- *      2. Chống ghi đè (Anti-collision): Kiểm tra mốc thời gian != 0 với custom error AlreadyExists().
- *      3. Tối ưu hóa lưu trữ (Storage Slot Packing): Đóng gói `address subject` (20 bytes) và `bool revoked` (1 byte)
- *         chung 1 slot 32 bytes giúp tiết kiệm 20,000 gas SSTORE khi khởi tạo bản ghi.
- *      4. Tra cứu không tốn gas: Hàm `verify` và `getRecord` là `view` (thực thi qua eth_call ở client-side).
- *      5. Bảo mật xác thực: Dùng `msg.sender`, tuyệt đối không dùng `tx.origin`.
- */
-contract ProjectCore {
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-    // --- CẤU TRÚC DỮ LIỆU (TỐI ƯU HÓA STORAGE SLOT) ---
-    struct Record {
-        bytes32 docHash;    // Slot 0: 32 bytes (Mã băm SHA-256 / Keccak-256)
-        uint256 timestamp;  // Slot 1: 32 bytes (Mốc thời gian đóng dấu block.timestamp)
-        address subject;    // Slot 2: 20 bytes (Địa chỉ tác giả / chủ thể công trình)
-        bool revoked;       // Slot 2: 1 byte  (Trạng thái thu hồi - Pack cùng Slot 2 = 21/32 bytes)
-        address issuer;     // Slot 3: 20 bytes (Địa chỉ người phát hành bản ghi)
-        string metadata;    // Slot 4: Chuỗi mô tả / URI lưu trữ
-    }
+/// @title ProjectCore - Hop dong chinh cua nhom co tich hop quy tac kinh te
+contract ProjectCore is ERC20, Ownable {
+    address public classFund;
+    uint256 public feeBps = 100; // 100 điểm cơ bản = 1%
+    uint256 public maxHolding;  // Trần nắm giữ của mỗi ví
 
-    // --- LƯU TRỮ TRẠNG THÁI ---
-    mapping(bytes32 => Record) private _records;
+    event FeeCollected(address indexed from, uint256 amount);
+    error ExceedsMaxHolding(uint256 attempted, uint256 limit);
 
-    // --- CUSTOM ERRORS (Tối ưu gas theo Solidity 0.8.20) ---
-    error AlreadyExists();
-    error NotIssuer();
-    error NotFound();
-
-    // --- SỰ KIỆN (EVENTS) ---
-    event RecordCreated(
-        bytes32 indexed docHash,
-        address indexed subject,
-        address indexed issuer,
-        uint256 timestamp,
-        string metadata
-    );
-
-    event RecordRevoked(
-        bytes32 indexed docHash,
-        address indexed issuer
-    );
-
-    // --- HÀM NGHIỆP VỤ ---
-
-    /**
-     * @notice Tạo bản ghi dấu thời gian mới cho tài liệu nghiên cứu
-     * @dev Áp dụng nghiêm ngặt CEI và kiểm tra chống ghi đè
-     * @param docHash Mã băm 32 bytes của tài liệu nghiên cứu
-     * @param subject Địa chỉ ví của tác giả / chủ sở hữu công trình
-     * @param metadata Mô tả ngắn hoặc URI thông tin nghiên cứu
-     */
-    function createRecord(
-        bytes32 docHash,
-        address subject,
-        string calldata metadata
-    ) external {
-        // 1. CHECKS: Kiểm tra mã băm đã tồn tại hay chưa
-        if (_records[docHash].timestamp != 0) {
-            revert AlreadyExists();
-        }
-
-        // 2. EFFECTS: Ghi bản ghi vào storage (tận dụng slot packing)
-        _records[docHash] = Record({
-            docHash: docHash,
-            timestamp: block.timestamp,
-            subject: subject,
-            revoked: false,
-            issuer: msg.sender,
-            metadata: metadata
-        });
-
-        // 3. INTERACTIONS / LOGS: Phát event thông báo
-        emit RecordCreated(
-            docHash,
-            subject,
-            msg.sender,
-            block.timestamp,
-            metadata
-        );
-    }
-
-    /**
-     * @notice Thu hồi bản ghi dấu thời gian nếu phát hiện sai phạm hoặc đạo văn
-     * @dev Chỉ người phát hành ban đầu (issuer) mới có thẩm quyền thu hồi
-     * @param docHash Mã băm của tài liệu cần thu hồi
-     */
-    function revokeRecord(bytes32 docHash) external {
-        Record storage record = _records[docHash];
-
-        // 1. CHECKS: Kiểm tra tồn tại và quyền của người gọi
-        if (record.timestamp == 0) {
-            revert NotFound();
-        }
-        if (record.issuer != msg.sender) {
-            revert NotIssuer();
-        }
-
-        // 2. EFFECTS: Cập nhật trạng thái thu hồi
-        record.revoked = true;
-
-        // 3. INTERACTIONS / LOGS: Phát event thu hồi
-        emit RecordRevoked(docHash, msg.sender);
-    }
-
-    /**
-     * @notice Thẩm định và tra cứu trạng thái tồn tại và tính hợp lệ của bản ghi (Miễn phí gas)
-     * @param docHash Mã băm của tài liệu cần kiểm tra
-     * @return exists Trạng thái tồn tại của bản ghi trên hệ thống
-     * @return isValid Tính hợp lệ (đã tồn tại và chưa bị thu hồi)
-     */
-    function verify(bytes32 docHash)
-        external
-        view
-        returns (bool exists, bool isValid)
+    constructor(address _classFund) 
+        ERC20("Project Core Token", "PCT") 
+        Ownable(msg.sender) 
     {
-        Record memory record = _records[docHash];
-        if (record.timestamp == 0) {
-            return (false, false);
-        }
-        return (true, !record.revoked);
+        require(_classFund != address(0), "Vi quy khong hop le");
+        classFund = _classFund;
+        
+        // Phát hành 1 triệu token ban đầu cho chủ sở hữu
+        _mint(msg.sender, 1_000_000 * 10 ** decimals());
+        maxHolding = totalSupply() * 2 / 100; // Trần nắm giữ là 2% tổng cung
     }
 
-    /**
-     * @notice Lấy thông tin chi tiết đầy đủ của một bản ghi (Miễn phí gas)
-     * @param docHash Mã băm tài liệu cần tra cứu
-     * @return record Cấu trúc Record lưu trữ trên chuỗi
-     */
-    function getRecord(bytes32 docHash) external view returns (Record memory record) {
-        record = _records[docHash];
-        if (record.timestamp == 0) {
-            revert NotFound();
+    /// @dev Ghi đè hàm _update theo chuẩn OpenZeppelin v5 để thu phí và chặn trần nắm giữ
+    function _update(address from, address to, uint256 value) internal override {
+        bool isNormalTransfer = from != address(0) && to != address(0) && from != owner();
+
+        // Thu phí 1% nếu là giao dịch thông thường chuyển cho ví quỹ
+        if (isNormalTransfer && feeBps > 0) {
+            uint256 fee = (value * feeBps) / 10_000;
+            if (fee > 0) {
+                super._update(from, classFund, fee);
+                emit FeeCollected(from, fee);
+                value -= fee; // Trừ đi phần phí trước khi chuyển phần còn lại cho người nhận
+            }
+        }
+
+        super._update(from, to, value);
+
+        // Kiểm tra trần nắm giữ sau khi giao dịch hoàn tất
+        if (to != address(0) && to != classFund && to != owner()) {
+            if (balanceOf(to) > maxHolding) {
+                revert ExceedsMaxHolding(balanceOf(to), maxHolding);
+            }
         }
     }
 }
