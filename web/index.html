@@ -1,0 +1,903 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hue Research Timestamp (HRT) - Đóng dấu Thời gian Nghiên cứu Khoa học</title>
+  <meta name="description" content="Hệ thống đóng dấu thời gian bảo vệ bản quyền nghiên cứu khoa học và bài báo học thuật cho sinh viên và giảng viên Đại học Huế trên nền tảng Blockchain Ethereum.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-dark: #0f172a;
+      --primary-accent: #2563eb;
+      --secondary: #0ea5e9;
+      --success: #10b981;
+      --success-bg: #ecfdf5;
+      --danger: #ef4444;
+      --danger-bg: #fef2f2;
+      --warning: #f59e0b;
+      --warning-bg: #fffbeb;
+      --info-bg: #eff6ff;
+      --bg: #090d16;
+      --bg-gradient: radial-gradient(circle at 50% 0%, #1e293b 0%, #090d16 80%);
+      --card-bg: rgba(15, 23, 42, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --input-bg: rgba(30, 41, 59, 0.6);
+      --input-border: rgba(255, 255, 255, 0.12);
+      --radius: 16px;
+      --glow: 0 0 24px rgba(37, 99, 235, 0.25);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg-gradient);
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.6;
+      padding: 32px 16px;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* HEADER */
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+      position: relative;
+    }
+
+    .badge-uni {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(14, 165, 233, 0.12);
+      color: #38bdf8;
+      border: 1px solid rgba(14, 165, 233, 0.3);
+      margin-bottom: 12px;
+      backdrop-filter: blur(8px);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #38bdf8;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #38bdf8;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.8); }
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 30%, #93c5fd 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* CARDS */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      margin-bottom: 24px;
+      transition: border-color 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    /* WALLET BAR */
+    .wallet-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+
+    .wallet-info {
+      font-size: 0.92rem;
+    }
+
+    .wallet-status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .wallet-address {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      color: #60a5fa;
+      font-size: 0.9rem;
+      word-break: break-all;
+    }
+
+    .meta-tag {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .meta-tag strong {
+      color: #cbd5e1;
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 20px;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(51, 65, 85, 0.8);
+      color: #f1f5f9;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: rgba(71, 85, 105, 0.9);
+      color: #ffffff;
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    .btn-full {
+      width: 100%;
+      padding: 13px;
+      font-size: 1rem;
+    }
+
+    /* TABS */
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.5);
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
+      margin-bottom: 24px;
+    }
+
+    .tab-btn {
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      font-family: inherit;
+    }
+
+    .tab-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      color: #ffffff;
+      background: var(--primary-accent);
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    }
+
+    /* FORMS */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="file"] {
+      width: 100%;
+      padding: 12px 14px;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      border-radius: 10px;
+      color: #ffffff;
+      font-size: 0.92rem;
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+
+    input[type="file"] {
+      padding: 10px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    input[type="file"]::file-selector-button {
+      padding: 6px 14px;
+      border-radius: 6px;
+      background: #334155;
+      color: #ffffff;
+      border: none;
+      font-weight: 600;
+      margin-right: 12px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    input[type="file"]::file-selector-button:hover {
+      background: #475569;
+    }
+
+    .hash-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.83rem;
+      padding: 12px 14px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px dashed rgba(59, 130, 246, 0.4);
+      border-radius: 8px;
+      color: #38bdf8;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+
+    .hint-text {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* STATUS MESSAGES */
+    .status-msg {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      display: none;
+      line-height: 1.5;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .status-msg.info {
+      display: block;
+      background: rgba(14, 165, 233, 0.12);
+      border: 1px solid rgba(14, 165, 233, 0.3);
+      color: #7dd3fc;
+    }
+
+    .status-msg.success {
+      display: block;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #6ee7b7;
+    }
+
+    .status-msg.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    /* RESULT CERTIFICATE */
+    .result-box {
+      display: none;
+      margin-top: 24px;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.9) 100%);
+      border-radius: 14px;
+      padding: 22px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .result-box.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .cert-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+    }
+
+    .cert-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.9rem;
+      gap: 12px;
+    }
+
+    .result-label {
+      color: var(--text-muted);
+      font-weight: 500;
+      min-width: 130px;
+    }
+
+    .result-value {
+      color: #f1f5f9;
+      font-weight: 600;
+      text-align: right;
+      word-break: break-all;
+    }
+
+    .tag-valid {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .tag-revoked {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 20px;
+    }
+
+    /* SPINNER */
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #ffffff;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 640px) {
+      body { padding: 16px 10px; }
+      h1 { font-size: 1.7rem; }
+      .card { padding: 18px; }
+      .tabs { grid-template-columns: 1fr; }
+      .wallet-bar { flex-direction: column; align-items: stretch; }
+      .result-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+      .result-value { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge-uni">
+        <span class="pulse-dot"></span>
+        <span>HỌC PHẦN ECO2432 — ĐẠI HỌC KINH TẾ (ĐẠI HỌC HUẾ)</span>
+      </div>
+      <h1>Hue Research Timestamp (HRT)</h1>
+      <p class="subtitle">Đóng dấu thời gian bất biến & Bảo vệ bản quyền nghiên cứu khoa học trên Blockchain</p>
+    </header>
+
+    <!-- THANH KẾT NỐI VÍ METAMASK -->
+    <div class="card wallet-bar">
+      <div class="wallet-info">
+        <div class="wallet-status-row">
+          <span style="color: #cbd5e1; font-weight: 600;">Ví của bạn:</span>
+          <span id="walletAddress" class="wallet-address">Chưa kết nối</span>
+        </div>
+        <div class="meta-tag">
+          Mạng: <strong id="networkName">Ethereum Sepolia</strong> | Số dư: <strong id="walletBalance">0.0000</strong> ETH
+        </div>
+      </div>
+      <button id="btnConnect" class="btn btn-primary">
+        <span>🦊</span>
+        <span>Kết nối MetaMask</span>
+      </button>
+    </div>
+
+    <!-- TABS ĐIỀU HƯỚNG -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('registerTab')">1. Đăng ký Timestamp</button>
+      <button class="tab-btn" onclick="switchTab('verifyTab')">2. Thẩm định & Tra cứu</button>
+      <button class="tab-btn" onclick="switchTab('configTab')">3. Cấu hình Smart Contract</button>
+    </div>
+
+    <!-- TAB 1: ĐĂNG KÝ BẢN QUYỀN (CLIENT-SIDE HASHING) -->
+    <div id="registerTab" class="card tab-content">
+      <h2 style="font-size: 1.3rem; margin-bottom: 8px; color: #ffffff;">Đăng ký chứng nhận bản quyền công trình</h2>
+      <p class="hint-text" style="margin-bottom: 20px;">
+        Nội dung tệp nghiên cứu được băm (SHA-256) trực tiếp 100% tại trình duyệt máy khách (Client-side Hashing). Tệp gốc tuyệt đối không bị tải lên bất kỳ máy chủ nào, bảo đảm an toàn dữ liệu học thuật.
+      </p>
+
+      <div class="form-group">
+        <label for="researchFile">1. Chọn tệp nghiên cứu (PDF, DOCX, ZIP, dữ liệu thô):</label>
+        <input type="file" id="researchFile" onchange="handleFileSelect(this, 'regHashDisplay')">
+      </div>
+
+      <div class="form-group">
+        <label>Mã băm dấu vân tay số (SHA-256 Hash - 32 bytes):</label>
+        <div id="regHashDisplay" class="hash-display">Vui lòng chọn tệp ở trên để tự động băm SHA-256 tại máy tính của bạn...</div>
+      </div>
+
+      <div class="form-group">
+        <label for="researchTitle">2. Tên công trình / Đề tài nghiên cứu khoa học:</label>
+        <input type="text" id="researchTitle" placeholder="Ví dụ: Ứng dụng Blockchain trong quản trị chuỗi cung ứng đặc sản Huế">
+      </div>
+
+      <div class="form-group">
+        <label for="researchAuthors">3. Tác giả / MSSV / Khoa viện:</label>
+        <input type="text" id="researchAuthors" placeholder="Ví dụ: Phan Thành Đạt, Nguyễn Hữu Bằng - Khoa HTTT Kinh tế, HCE">
+      </div>
+
+      <div class="form-group">
+        <label for="researchMetadata">4. Đường dẫn tóm tắt / IPFS URI / DOI xuất bản:</label>
+        <input type="text" id="researchMetadata" placeholder="Ví dụ: ipfs://bafybeigdyrzt5sfp7udm7hu76uh... hoặc https://hce.edu.vn/...">
+      </div>
+
+      <div class="form-group">
+        <label for="regFee">Phí đóng dấu thời gian (Quy định kinh tế Lab 11):</label>
+        <input type="text" id="regFee" value="0.001" readonly style="background: rgba(15, 23, 42, 0.5); color: #94a3b8; font-family: monospace;">
+        <p class="hint-text">Phí dịch vụ 0.001 ETH phục vụ duy trì hạ tầng IPFS và tài trợ nghiên cứu sinh viên Đại học Huế.</p>
+      </div>
+
+      <button id="btnRegister" class="btn btn-primary btn-full" onclick="registerDocument()">
+        <span>✍️</span>
+        <span>Ký số & Đóng dấu lên Blockchain Sepolia</span>
+      </button>
+      <div id="regStatus" class="status-msg"></div>
+    </div>
+
+    <!-- TAB 2: THẨM ĐỊNH VÀ TRA CỨU MIỄN PHÍ GAS -->
+    <div id="verifyTab" class="card tab-content" style="display: none;">
+      <h2 style="font-size: 1.3rem; margin-bottom: 8px; color: #ffffff;">Thẩm định & Tra cứu tính nguyên bản (Miễn phí Gas)</h2>
+      <p class="hint-text" style="margin-bottom: 20px;">
+        Tra cứu trực tiếp trên sổ cái Blockchain Sepolia. Thao tác đọc dữ liệu hoàn toàn miễn phí, không yêu cầu ký ví.
+      </p>
+
+      <div class="form-group">
+        <label for="verifyFile">Cách A: Chọn tệp cần đối chiếu trực tiếp (Tự động băm):</label>
+        <input type="file" id="verifyFile" onchange="handleFileSelect(this, 'verifyHashInput')">
+      </div>
+
+      <div class="form-group">
+        <label for="verifyHashInput">Cách B: Hoặc dán trực tiếp mã băm SHA-256 (bytes32):</label>
+        <input type="text" id="verifyHashInput" placeholder="0x4f83e20e8a7f1a3a412b1d31d0db7a922614b98c37d0c3268875317bfb21d5a7" style="font-family: monospace;">
+      </div>
+
+      <button id="btnVerify" class="btn btn-primary btn-full" onclick="verifyDocument()">
+        <span>🔍</span>
+        <span>Tra cứu chứng thư trên Blockchain</span>
+      </button>
+
+      <div id="verifyStatus" class="status-msg"></div>
+
+      <!-- KHUNG HIỂN THỊ CHỨNG THƯ SỐ -->
+      <div id="verifyResult" class="result-box">
+        <div class="cert-header">
+          <div class="cert-title">📜 Chứng thư Dấu thời gian Số (Digital Certificate)</div>
+          <div id="resStatus">-</div>
+        </div>
+        <div class="result-row">
+          <div class="result-label">Tên công trình:</div>
+          <div class="result-value" id="resTitle">-</div>
+        </div>
+        <div class="result-row">
+          <div class="result-label">Nhóm tác giả:</div>
+          <div class="result-value" id="resAuthors">-</div>
+        </div>
+        <div class="result-row">
+          <div class="result-label">Dấu thời gian bất biến:</div>
+          <div class="result-value" id="resTime" style="color: #38bdf8;">-</div>
+        </div>
+        <div class="result-row">
+          <div class="result-label">Số hiệu khối (Block):</div>
+          <div class="result-value" id="resBlock" style="font-family: monospace;">-</div>
+        </div>
+        <div class="result-row">
+          <div class="result-label">Ví tác giả sở hữu:</div>
+          <div class="result-value" id="resOwner" style="font-family: monospace; font-size: 0.85rem; color: #a5b4fc;">-</div>
+        </div>
+        <div class="result-row">
+          <div class="result-label">Metadata URI:</div>
+          <div class="result-value" id="resMetadata" style="font-size: 0.85rem; color: #cbd5e1;">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: CẤU HÌNH & THÔNG TIN HỢP ĐỒNG -->
+    <div id="configTab" class="card tab-content" style="display: none;">
+      <h2 style="font-size: 1.3rem; margin-bottom: 8px; color: #ffffff;">Cấu hình Smart Contract</h2>
+      <p class="hint-text" style="margin-bottom: 20px;">
+        Địa chỉ Smart Contract `ProjectCore.sol` trên mạng Ethereum Sepolia Testnet.
+      </p>
+
+      <div class="form-group">
+        <label for="contractAddressInput">Địa chỉ Smart Contract (`ProjectCore`):</label>
+        <input type="text" id="contractAddressInput" value="0x71C8F79720f4C7e74a68C838Fdfd3d4b68019688" style="font-family: monospace;">
+        <p class="hint-text">Mặc định: Địa chỉ đã triển khai chính thức của nhóm trên Sepolia Testnet.</p>
+      </div>
+
+      <button class="btn btn-secondary" onclick="saveContractAddress()">💾 Lưu cấu hình</button>
+      <div id="configStatus" class="status-msg"></div>
+
+      <div style="margin-top: 24px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+        <h3 style="font-size: 1rem; color: #ffffff; margin-bottom: 8px;">Bảng ánh xạ tương tác on-chain</h3>
+        <p class="hint-text" style="line-height: 1.6;">
+          • <strong>Hàm đọc (Free Gas):</strong> <code>verifyDocument</code>, <code>verify</code>, <code>registrationFee</code>, <code>totalDocumentsRegistered</code><br>
+          • <strong>Hàm ghi (Cần ký ví):</strong> <code>registerDocument</code> (0.001 ETH), <code>updateMetadata</code>, <code>withdrawFees</code>, <code>revokeDocument</code>
+        </p>
+      </div>
+    </div>
+
+    <footer>
+      <p>Hue Research Timestamp (HRT) &copy; 2026 — Đề tài Nghiên cứu Khoa học & Học phần ECO2432</p>
+      <p style="margin-top: 4px; font-size: 0.78rem; color: #64748b;">Trường Đại học Kinh tế, Đại học Huế | Xây dựng với Ethers.js v6 & Web Crypto API</p>
+    </footer>
+  </div>
+
+<script>
+// --- ABI CHUẨN CỦA PROJECTCORE.SOL (HỌC PHẦN ECO2432) ---
+const PROJECT_CORE_ABI = [
+  "function registerDocument(bytes32 documentHash, string title, string authors, string metadataURI) external payable",
+  "function verifyDocument(bytes32 documentHash) external view returns (bool exists, address owner, uint256 timestamp, uint256 blockNumber, string title, string authors, string metadataURI, bool isRevoked)",
+  "function updateMetadata(bytes32 documentHash, string newMetadataURI) external",
+  "function registrationFee() external view returns (uint256)",
+  "function totalDocumentsRegistered() external view returns (uint256)",
+  "function withdrawFees(address payable recipient) external",
+  "function setRegistrationFee(uint256 newFee) external",
+  "event DocumentTimestamped(bytes32 indexed documentHash, address indexed owner, uint256 timestamp, uint256 blockNumber, string title)",
+  "event FeeCollected(address indexed payer, uint256 amount)",
+  "event FundsWithdrawn(address indexed authority, address indexed recipient, uint256 amount)",
+  "error InsufficientFee(uint256 requiredFee, uint256 sentFee)",
+  "error HashAlreadyExists(bytes32 documentHash, uint256 existingTimestamp)",
+  "error InvalidDocumentHash()",
+  "error DocumentNotFound()",
+  "error NotDocumentOwner()",
+  "error FeeExceedsLimit(uint256 attemptedFee, uint256 maxLimit)",
+  "error ZeroBalance()",
+  "error InvalidRecipient()"
+];
+
+let provider = null;
+let signer = null;
+let contract = null;
+let currentHash = "";
+
+// Lấy địa chỉ contract từ localStorage nếu có
+let CONTRACT_ADDRESS = localStorage.getItem("HRT_CONTRACT_ADDRESS") || "0x71C8F79720f4C7e74a68C838Fdfd3d4b68019688";
+document.getElementById("contractAddressInput").value = CONTRACT_ADDRESS;
+
+function saveContractAddress() {
+  const addr = document.getElementById("contractAddressInput").value.trim();
+  if (!ethers.isAddress(addr)) {
+    showStatus("configStatus", "Địa chỉ hợp đồng không hợp lệ (phải bắt đầu bằng 0x và dài 42 ký tự)!", "error");
+    return;
+  }
+  CONTRACT_ADDRESS = addr;
+  localStorage.setItem("HRT_CONTRACT_ADDRESS", addr);
+  if (signer) {
+    contract = new ethers.Contract(CONTRACT_ADDRESS, PROJECT_CORE_ABI, signer);
+  }
+  showStatus("configStatus", "Đã lưu thành công địa chỉ hợp đồng mới!", "success");
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll(".tab-content").forEach(el => el.style.display = "none");
+  document.querySelectorAll(".tab-btn").forEach(el => el.classList.remove("active"));
+  document.getElementById(tabId).style.display = "block";
+  if (event && event.target) {
+    event.target.classList.add("active");
+  }
+}
+
+function showStatus(elementId, text, type) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  el.innerHTML = text;
+  el.className = `status-msg ${type}`;
+}
+
+// Bắt lỗi Custom Error thân thiện cho người dùng theo đúng Sổ tay Lab 15 Bước 2
+function parseFriendlyError(err) {
+  const raw = (err.shortMessage || err.reason || err.message || "").toString();
+  if (raw.includes("InsufficientFee")) {
+    return "Lỗi quy tắc kinh tế: Bạn chưa gửi đủ phí đăng ký (bắt buộc 0.001 ETH)!";
+  }
+  if (raw.includes("HashAlreadyExists")) {
+    return "Tài liệu này đã tồn tại trên Blockchain! Mã băm SHA-256 đã được một tác giả khác đăng ký trước đó.";
+  }
+  if (raw.includes("InvalidDocumentHash")) {
+    return "Mã băm tài liệu không hợp lệ hoặc rỗng!";
+  }
+  if (raw.includes("OwnableUnauthorizedAccount") || raw.includes("NotOwner")) {
+    return "Lỗi phân quyền: Bạn không phải Quản trị viên của hợp đồng!";
+  }
+  if (raw.includes("NotDocumentOwner")) {
+    return "Chỉ chính tác giả đăng ký công trình mới có quyền cập nhật siêu dữ liệu!";
+  }
+  if (raw.includes("FeeExceedsLimit")) {
+    return "Mức phí điều chỉnh vượt quá giới hạn trần an toàn (0.05 ETH)!";
+  }
+  if (raw.includes("user rejected") || raw.includes("ACTION_REJECTED")) {
+    return "Bạn đã từ chối ký xác nhận giao dịch trên ví MetaMask.";
+  }
+  if (raw.includes("insufficient funds")) {
+    return "Số dư ví Sepolia ETH của bạn không đủ để trả phí đăng ký và gas!";
+  }
+  return raw;
+}
+
+// Băm file 100% tại Client bằng Web Crypto API (SHA-256) - Tuyệt đối không upload file raw
+async function handleFileSelect(input, targetDisplayId) {
+  if (!input.files || input.files.length === 0) return;
+  const file = input.files[0];
+  const target = document.getElementById(targetDisplayId);
+
+  try {
+    if (target.tagName !== "INPUT") {
+      target.innerHTML = `<span class="spinner"></span> Đang băm dữ liệu tệp tại máy khách...`;
+    }
+
+    const buffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = "0x" + hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+    
+    currentHash = hashHex;
+    if (target.tagName === "INPUT") {
+      target.value = hashHex;
+    } else {
+      target.innerHTML = `<strong>${hashHex}</strong><br><span style="color: #94a3b8; font-size: 0.75rem;">(${file.name} — ${(file.size / 1024).toFixed(1)} KB)</span>`;
+    }
+  } catch (e) {
+    console.error(e);
+    if (target.tagName !== "INPUT") {
+      target.textContent = "Lỗi khi tính toán mã băm tệp!";
+    }
+  }
+}
+
+// Kết nối MetaMask
+document.getElementById("btnConnect").onclick = async () => {
+  const btn = document.getElementById("btnConnect");
+  if (!window.ethereum) {
+    alert("Vui lòng cài đặt tiện ích mở rộng MetaMask trên trình duyệt Chrome/Edge/Firefox!");
+    return;
+  }
+  try {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Đang kết nối ví...`;
+
+    provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    signer = await provider.getSigner();
+    const address = await signer.getAddress();
+    document.getElementById("walletAddress").textContent = address.slice(0, 6) + "..." + address.slice(-4);
+    document.getElementById("walletAddress").title = address;
+
+    const balance = await provider.getBalance(address);
+    document.getElementById("walletBalance").textContent = parseFloat(ethers.formatEther(balance)).toFixed(4);
+
+    const network = await provider.getNetwork();
+    document.getElementById("networkName").textContent = (network.name && network.name !== "unknown") ? network.name : `Chain ID ${network.chainId}`;
+
+    contract = new ethers.Contract(CONTRACT_ADDRESS, PROJECT_CORE_ABI, signer);
+    btn.innerHTML = `<span>✅</span> <span>Đã kết nối</span>`;
+    btn.classList.replace("btn-primary", "btn-secondary");
+    btn.disabled = false;
+  } catch (err) {
+    console.error(err);
+    alert("Kết nối ví thất bại: " + (err.shortMessage || err.message));
+    btn.innerHTML = `<span>🦊</span> <span>Thử lại kết nối</span>`;
+    btn.disabled = false;
+  }
+};
+
+// Đăng ký Timestamp lên Contract
+async function registerDocument() {
+  const btn = document.getElementById("btnRegister");
+  if (!contract) {
+    alert("Vui lòng kết nối ví MetaMask trước khi đăng ký!");
+    return;
+  }
+  if (!currentHash || currentHash === "") {
+    showStatus("regStatus", "Vui lòng chọn tệp để hệ thống tự động sinh mã băm SHA-256!", "error");
+    return;
+  }
+  const title = document.getElementById("researchTitle").value.trim();
+  const authors = document.getElementById("researchAuthors").value.trim();
+  const metadata = document.getElementById("researchMetadata").value.trim() || "ipfs://hrt-default-summary";
+  const feeEther = document.getElementById("regFee").value.trim() || "0.001";
+
+  if (!title || !authors) {
+    showStatus("regStatus", "Vui lòng điền đầy đủ tên đề tài và nhóm tác giả nghiên cứu!", "error");
+    return;
+  }
+
+  try {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Đang yêu cầu ký ví MetaMask...`;
+    showStatus("regStatus", "Vui lòng xác nhận giao dịch trên cửa sổ MetaMask...", "info");
+
+    const tx = await contract.registerDocument(currentHash, title, authors, metadata, {
+      value: ethers.parseEther(feeEther)
+    });
+
+    btn.innerHTML = `<span class="spinner"></span> Đang chờ thợ đào đóng khối...`;
+    showStatus("regStatus", `Giao dịch đã phát! Mã Tx: <code>${tx.hash}</code>. Đang chờ xác nhận trên Sepolia...`, "info");
+    
+    await tx.wait();
+    btn.innerHTML = `<span>✅</span> <span>Đã ghi nhận thành công</span>`;
+    showStatus("regStatus", `🎉 <strong>Đóng dấu thời gian thành công!</strong> Đề tài đã được bảo vệ bất biến trên Blockchain.<br>Mã giao dịch: <a href="https://sepolia.etherscan.io/tx/${tx.hash}" target="_blank" style="color: #60a5fa; text-decoration: underline;">Xem trên Etherscan</a>`, "success");
+    btn.disabled = false;
+  } catch (err) {
+    console.error(err);
+    const friendlyMsg = parseFriendlyError(err);
+    showStatus("regStatus", `⚠️ ${friendlyMsg}`, "error");
+    btn.innerHTML = `<span>✍️</span> <span>Ký số & Đóng dấu lên Blockchain Sepolia</span>`;
+    btn.disabled = false;
+  }
+}
+
+// Thẩm định và Tra cứu tính nguyên bản (Miễn phí gas)
+async function verifyDocument() {
+  const btn = document.getElementById("btnVerify");
+  let hash = document.getElementById("verifyHashInput").value.trim();
+  if (!hash.startsWith("0x") || hash.length !== 66) {
+    showStatus("verifyStatus", "Mã băm không hợp lệ! Bắt buộc là chuỗi hex 32 bytes (bắt đầu bằng 0x, dài đúng 66 ký tự).", "error");
+    return;
+  }
+
+  // Dùng provider kết nối hoặc fallback Sepolia public RPC nếu chưa kết nối ví
+  const queryProvider = provider || new ethers.JsonRpcProvider("https://rpc.sepolia.org");
+  const readContract = new ethers.Contract(CONTRACT_ADDRESS, PROJECT_CORE_ABI, queryProvider);
+
+  try {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner"></span> Đang tra cứu sổ cái on-chain...`;
+    showStatus("verifyStatus", "Đang truy vấn dữ liệu từ nút mạng Ethereum...", "info");
+
+    const doc = await readContract.verifyDocument(hash);
+    const resultBox = document.getElementById("verifyResult");
+
+    if (!doc.exists) {
+      showStatus("verifyStatus", "Tài liệu này CHƯA TỪNG được đăng ký bản quyền trên hệ thống!", "error");
+      resultBox.classList.remove("active");
+      btn.innerHTML = `<span>🔍</span> <span>Tra cứu chứng thư trên Blockchain</span>`;
+      btn.disabled = false;
+      return;
+    }
+
+    showStatus("verifyStatus", "✅ Đã tìm thấy chứng thư bảo vệ bản quyền hợp lệ!", "success");
+    resultBox.classList.add("active");
+
+    const statusEl = document.getElementById("resStatus");
+    if (doc.isRevoked) {
+      statusEl.innerHTML = '<span class="tag-revoked">ĐÃ BỊ THU HỒI DO VI PHẠM HỌC THUẬT</span>';
+    } else {
+      statusEl.innerHTML = '<span class="tag-valid">NGUYÊN BẢN VÀ CÓ HIỆU LỰC (ACTIVE)</span>';
+    }
+
+    document.getElementById("resTitle").textContent = doc.title;
+    document.getElementById("resAuthors").textContent = doc.authors;
+    document.getElementById("resTime").textContent = new Date(Number(doc.timestamp) * 1000).toLocaleString("vi-VN");
+    document.getElementById("resBlock").textContent = "#" + doc.blockNumber.toString();
+    document.getElementById("resOwner").textContent = doc.owner;
+    document.getElementById("resMetadata").textContent = doc.metadataURI || "Không có";
+
+    btn.innerHTML = `<span>🔍</span> <span>Tra cứu lại</span>`;
+    btn.disabled = false;
+  } catch (err) {
+    console.error(err);
+    const friendlyMsg = parseFriendlyError(err);
+    showStatus("verifyStatus", "Lỗi tra cứu: " + friendlyMsg, "error");
+    btn.innerHTML = `<span>🔍</span> <span>Tra cứu chứng thư trên Blockchain</span>`;
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
