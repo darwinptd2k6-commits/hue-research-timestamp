@@ -1,0 +1,159 @@
+﻿
+> hue-research-timestamp@0.1.0 test
+> node test/ProjectCore.test.js && node test/Lab11_EconomicRules.test.js && node test/Lab13_ReentrancyHardening.test.js && node test/Lab14_CrossAudit.test.js && node test/Lab15_DAppIntegration.test.js
+
+==================================================================
+   KIá»‚M THá»¬ Há»¢P Äá»’NG PROJECTCORE - HUE RESEARCH TIMESTAMP (HRT)   
+   MĂ´n há»c: ECO2432 - Web3 & Fintech (Äáº¡i há»c Kinh táº¿ - Äáº¡i há»c Huáº¿)         
+==================================================================
+
+[PASS] TC01: ÄÄƒng kĂ½ tĂ i liá»‡u há»£p lá»‡ vá»›i Ä‘á»§ phĂ­ ETH (Happy Path)
+[PASS] TC02: Tra cá»©u vĂ  xĂ¡c thá»±c tĂ i liá»‡u Ä‘Ă£ Ä‘Äƒng kĂ½ thĂ nh cĂ´ng
+[PASS] TC03: Revert khi mĂ£ bÄƒm tĂ i liá»‡u rá»—ng (Boundary check)
+[PASS] TC04: Revert khi ngÆ°á»i dĂ¹ng khĂ´ng náº¡p Ä‘á»§ phĂ­ Ä‘Äƒng kĂ½ quy Ä‘á»‹nh
+[PASS] TC05: PhĂ¡t hiá»‡n gian láº­n: Cá»‘ tĂ¬nh Ä‘Äƒng kĂ½ trĂ¹ng mĂ£ bÄƒm cá»§a tĂ¡c giáº£ khĂ¡c
+[PASS] TC06: Chá»§ sá»Ÿ há»¯u cĂ´ng trĂ¬nh cáº­p nháº­t thĂ nh cĂ´ng siĂªu dá»¯ liá»‡u metadataURI
+[PASS] TC07: NgÄƒn cháº·n káº» xáº¥u sá»­a Ä‘á»•i trĂ¡i phĂ©p siĂªu dá»¯ liá»‡u cá»§a ngÆ°á»i khĂ¡c
+[PASS] TC08: Admin thu há»“i chá»©ng nháº­n khi Há»™i Ä‘á»“ng ká»· luáº­t phĂ¡t hiá»‡n Ä‘áº¡o vÄƒn
+[PASS] TC09: RĂºt tiá»n an toĂ n bá»Ÿi Quáº£n trá»‹ viĂªn (Checks-Effects-Interactions)
+
+=> Káº¾T QUáº¢ KIá»‚M THá»¬: 9/9 ca kiá»ƒm thá»­ THĂ€NH CĂ”NG (100%).
+================================================================================
+   LAB 11 â€” KIá»‚M THá»¬ QUY Táº®C KINH Táº¾ VĂ€O Sáº¢N PHáº¨M (PROJECTCORE.SOL)             
+   Há»c pháº§n: ECO2432 - Tiá»n Ä‘iá»‡n tá»­ & Há»£p Ä‘á»“ng thĂ´ng minh (Äáº¡i há»c Huáº¿ - HUE)   
+================================================================================
+
+--- BÆ¯á»C 4: KIá»‚M THá»¬ QUY Táº®C KINH Táº¾ (LAB 11 REQUIREMENT) ---
+
+       -> Minh chá»©ng: Sá»‘ dÆ° há»£p Ä‘á»“ng = 1000000000000000 wei (0.001 ETH)
+       -> Event FeeCollected: payer=0x1111111111111111111111111111111111111111, amount=1000000000000000
+[PASS] TC-LAB11-01 [HAPPY PATH]: ÄÄƒng kĂ½ thĂ nh cĂ´ng khi náº¡p Ä‘á»§ 0.001 ETH phĂ­ dá»‹ch vá»¥
+       -> Bá»‹ cháº·n bá»Ÿi Custom Error: InsufficientFee(1000000000000000, 500000000000000)
+[PASS] TC-LAB11-02 [VIOLATION]: Giao dá»‹ch bá»‹ cháº·n khi náº¡p thiáº¿u phĂ­ (chá»‰ gá»­i 0.0005 ETH)
+[PASS] TC-LAB11-03 [EDGE CASE]: Giao dá»‹ch bá»‹ cháº·n khi náº¡p 0 ETH (Cá»‘ tĂ¬nh spam miá»…n phĂ­)
+       -> Bá»‹ cháº·n bá»Ÿi Custom Error: HashAlreadyExists("0xa1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0", 1792216991)
+[PASS] TC-LAB11-04 [MALICIOUS]: NgÄƒn cháº·n káº» gian Äƒn cáº¯p Ă½ tÆ°á»Ÿng: ÄÄƒng kĂ½ trĂ¹ng mĂ£ bÄƒm Ä‘Ă£ cĂ³
+       -> Bá»‹ cháº·n bá»Ÿi Custom Error: OwnableUnauthorizedAccount("0x6666666666666666666666666666666666666666")
+[PASS] TC-LAB11-05 [UNAUTHORIZED]: Cháº·n ngÆ°á»i láº¡ tá»± Ă½ thay Ä‘á»•i má»©c phĂ­ dá»‹ch vá»¥ cá»§a há»£p Ä‘á»“ng
+       -> Má»©c phĂ­ má»›i: 2000000000000000 wei (0.002 ETH)
+[PASS] TC-LAB11-06 [GOVERNANCE]: Quáº£n trá»‹ viĂªn (Äáº¡i há»c Huáº¿) cáº­p nháº­t má»©c phĂ­ má»›i thĂ nh cĂ´ng
+       -> ÄĂ£ chuyá»ƒn 1000000000000000 wei Ä‘áº¿n vĂ­ Quá»¹: 0x8888888888888888888888888888888888888888
+       -> Sá»‘ dÆ° há»£p Ä‘á»“ng sau khi rĂºt: 0 wei
+[PASS] TC-LAB11-07 [TREASURY CEI]: RĂºt quá»¹ doanh thu dá»‹ch vá»¥ an toĂ n vá» vĂ­ Quá»¹ NCKH Äáº¡i há»c Huáº¿
+
+================================================================================
+   Káº¾T QUáº¢ KIá»‚M THá»¬ LAB 11: 7/7 ca kiá»ƒm thá»­ THĂ€NH CĂ”NG (100%)       
+   Chuáº©n Ä‘áº§u ra Lab 11: Äáº T YĂU Cáº¦U TUYá»†T Äá»I                                  
+================================================================================
+================================================================================
+   LAB 13 â€” THá»°C NGHIá»†M Vá»¤ Máº¤T TIá»€N REENTRANCY VĂ€ HARDENING CODEBASE             
+   Há»c pháº§n: ECO2432 - Tiá»n Ä‘iá»‡n tá»­ & Há»£p Ä‘á»“ng thĂ´ng minh (Äáº¡i há»c Huáº¿ - HUE)   
+================================================================================
+
+--- BÆ¯á»C 1 & 2: THá»°C NGHIá»†M Vá»¤ Táº¤N CĂ”NG REENTRANCY TRĂN VULNERABLEBANK ---
+       -> Hiá»‡n trÆ°á»ng ban Ä‘áº§u: NgĂ¢n hĂ ng cĂ³ 6 ETH tá»« 3 ngÆ°á»i gá»­i
+       -> Sá»‘ dÆ° ngĂ¢n hĂ ng sau táº¥n cĂ´ng: 0 ETH
+       -> Sá»‘ tiá»n káº» táº¥n cĂ´ng rĂºt sáº¡ch: 7 ETH (gá»“m 1 ETH gá»‘c + 6 ETH cÆ°á»›p Ä‘Æ°á»£c)
+       -> Sá»‘ láº§n Ä‘á»‡ quy tĂ¡i nháº­p: 7 láº§n
+[PASS] TC-LAB13-01: [EXPLOIT] RĂºt cáº¡n 100% ngĂ¢n quá»¹ VulnerableBank qua lá»— há»•ng gá»i láº¡i
+
+--- BÆ¯á»C 4: THá»°C NGHIá»†M VĂ Lá»–I Báº°NG HAI PHÆ¯Æ NG ĂN CHUáº¨N ---
+       -> Láº§n gá»i Ä‘á»‡ quy thá»© 2 bá»‹ cháº·n: "Khong co so du"
+       -> Sá»‘ dÆ° ngĂ¢n hĂ ng Ä‘Æ°á»£c báº£o toĂ n: 6 ETH (nguyĂªn váº¹n 6 ETH cá»§a ngÆ°á»i dĂ¹ng)
+       -> Káº» táº¥n cĂ´ng chá»‰ nháº­n Ä‘Æ°á»£c: 1 ETH (chĂ­nh tiá»n náº¡p cá»§a mĂ¬nh)
+[PASS] TC-LAB13-02: [PATCH 1 - CEI] SafeBankCEI cháº·n Ä‘á»©ng Reentrancy chá»‰ báº±ng thá»© tá»± dĂ²ng lá»‡nh
+       -> ReentrancyGuard phĂ¡t hiá»‡n gá»i láº¡i vĂ  nĂ©m lá»—i: "ReentrancyGuardReentrantCall()"
+       -> ToĂ n bá»™ transaction bá»‹ hoĂ n tĂ¡c (reverted), 6 ETH cá»§a ngÆ°á»i dĂ¹ng Ä‘Æ°á»£c báº£o toĂ n 100%
+[PASS] TC-LAB13-03: [PATCH 2 - GUARD] SafeBankGuard ngÄƒn cháº·n vá»›i ReentrancyGuard cá»§a OpenZeppelin
+
+--- BÆ¯á»C 5: KIá»‚M THá»¬ AN TOĂ€N CA THáº¤T Báº I (NEGATIVE TESTS) CHO PROJECTCORE.SOL ---
+       -> Bá»‹ cháº·n vá»›i lá»—i: OwnableUnauthorizedAccount (msg.sender != owner)
+[PASS] TC-LAB13-04: [NEGATIVE - AUTH] Cháº·n káº» láº¡ (khĂ´ng pháº£i Owner) tá»± Ă½ rĂºt tiá»n quá»¹ withdrawFees
+       -> Bá»‹ cháº·n vá»›i lá»—i: InvalidRecipient (recipient == address(0))
+[PASS] TC-LAB13-05: [NEGATIVE - BOUNDARY] Cháº·n rĂºt quá»¹ vá» Ä‘á»‹a chá»‰ rá»—ng address(0)
+       -> Bá»‹ cháº·n vá»›i lá»—i: ZeroBalance (address(this).balance == 0)
+[PASS] TC-LAB13-06: [NEGATIVE - STATE] Cháº·n rĂºt quá»¹ khi sá»‘ dÆ° há»£p Ä‘á»“ng báº±ng 0
+       -> Káº» Ä‘á»™c háº¡i cá»‘ tĂ¡i nháº­p withdrawFees bá»‹ cháº·n bá»Ÿi: ReentrancyGuardReentrantCall()
+[PASS] TC-LAB13-07: [NEGATIVE - REENTRANCY] Cháº·n há»£p Ä‘á»“ng Ä‘á»™c háº¡i cá»‘ tĂ¬nh re-enter trong withdrawFees
+       -> Bá»‹ cháº·n vá»›i lá»—i: InsufficientFee(1000000000000000, 500000000000000)
+[PASS] TC-LAB13-08: [NEGATIVE - ECONOMIC] Cháº·n Ä‘Äƒng kĂ½ khi náº¡p thiáº¿u phĂ­ dá»‹ch vá»¥
+       -> Bá»‹ cháº·n vá»›i lá»—i: NotDocumentOwner (msg.sender != doc.owner)
+[PASS] TC-LAB13-09: [NEGATIVE - PERMISSION] Cháº·n káº» láº¡ cá»‘ tĂ¬nh sá»­a metadata tĂ i liá»‡u cá»§a tĂ¡c giáº£ khĂ¡c
+       -> Bá»‹ cháº·n vá»›i lá»—i: OwnableUnauthorizedAccount (Chi admin hoi dong moi duoc thu hoi)
+[PASS] TC-LAB13-10: [NEGATIVE - GOVERNANCE] Cháº·n ngÆ°á»i dĂ¹ng thÆ°á»ng tá»± Ă½ thu há»“i vÄƒn báº±ng
+
+================================================================================
+   Káº¾T QUáº¢ KIá»‚M THá»¬ LAB 13: 10/10 ca kiá»ƒm thá»­ THĂ€NH CĂ”NG (100%)       
+   Chuáº©n Ä‘áº§u ra Lab 13: Äáº T YĂU Cáº¦U TUYá»†T Äá»I                                  
+================================================================================
+================================================================================
+   LAB 14 â€” RĂ€ SOĂT CHĂ‰O GIá»®A CĂC NHĂ“M & XĂC THá»°C Báº¢N VĂ AUDIT (PROJECTCORE)    
+   Há»c pháº§n: ECO2432 - Tiá»n Ä‘iá»‡n tá»­ & Há»£p Ä‘á»“ng thĂ´ng minh (Äáº¡i há»c Huáº¿ - HUE)   
+================================================================================
+
+--- PHáº¦N A: KIá»‚M THá»¬ 10 Háº NG Má»¤C CHECKLIST Báº®T BUá»˜C (Sá»” TAY TRANG 32) ---
+       -> ÄĂ£ cháº·n: OwnableUnauthorizedAccount cho cáº£ 3 hĂ m quáº£n trá»‹
+[PASS] TC-LAB14-01: [ITEM 1 - PHĂ‚N QUYá»€N] HĂ m nháº¡y cáº£m cháº·n 100% ngÆ°á»i láº¡ gá»i (withdraw, revoke, setFee)
+       -> RĂºt quá»¹ an toĂ n: Sá»• sĂ¡ch vá» 0 trÆ°á»›c, sá»± kiá»‡n phĂ¡t Ä‘áº§y Ä‘á»§
+[PASS] TC-LAB14-02: [ITEM 2 - CEI & REENTRANCY] RĂºt tiá»n tuĂ¢n thá»§ CEI vĂ  ReentrancyGuard
+       -> Má»‘c thá»i gian báº¥t biáº¿n: 1792216992
+[PASS] TC-LAB14-03: [ITEM 3 - THá»œI GIAN] Má»‘c thá»i gian block.timestamp lĂ  báº¥t biáº¿n khĂ´ng thá»ƒ sá»­a Ä‘á»•i
+       -> Äáº£m báº£o tĂ­nh toĂ¡n sá»‘ nguyĂªn BigInt trĂªn Ä‘Æ¡n vá»‹ wei, an toĂ n trÆ°á»›c lá»—i chia lĂ m trĂ²n
+[PASS] TC-LAB14-04: [ITEM 4 & 5 - PHĂ‰P CHIA & CHUYá»‚N ETH] TĂ­nh toĂ¡n sá»‘ nguyĂªn an toĂ n, chuyá»ƒn ETH báº±ng .call
+       -> Ná»™i dung nghiĂªn cá»©u Ä‘Æ°á»£c báº£o máº­t 100% táº¡i phĂ­a ngÆ°á»i dĂ¹ng
+[PASS] TC-LAB14-05: [ITEM 6 - Báº¢O Máº¬T Dá»® LIá»†U] Chá»‰ lÆ°u mĂ£ bÄƒm 32 bytes, khĂ´ng lÆ°u ná»™i dung thĂ´ trĂªn chuá»—i
+       -> Truy xuáº¥t O(1) qua mapping, triá»‡t tiĂªu nguy cÆ¡ Out-of-Gas DoS
+[PASS] TC-LAB14-06: [ITEM 7 - VĂ’NG Láº¶P] KhĂ´ng chá»©a vĂ²ng láº·p khĂ´ng giá»›i háº¡n, Ä‘á»™ phá»©c táº¡p O(1)
+       -> Event FundsWithdrawn cĂ³ authority: 0xHueUniversityAdmin000000000000000000000
+[PASS] TC-LAB14-07: [ITEM 8 - Sá»° KIá»†N] PhĂ¡t Ä‘áº§y Ä‘á»§ sá»± kiá»‡n minh báº¡ch kĂ¨m authority khi rĂºt quá»¹
+       -> ÄĂ£ cháº·n cĂ¡c trÆ°á»ng há»£p biĂªn sá»‘ 0 vá»›i Ä‘Ăºng Custom Error
+[PASS] TC-LAB14-08: [ITEM 9 - TRÆ¯á»œNG Há»¢P Sá» 0] Cháº·n náº¡p thiáº¿u/0 ETH, hash rá»—ng vĂ  rĂºt sá»‘ dÆ° 0
+       -> ÄĂ£ cháº·n: InvalidRecipient khi gá»­i vá» address(0)
+[PASS] TC-LAB14-09: [ITEM 10 - Äá»A CHá»ˆ Rá»–NG] Cháº·n rĂºt tiá»n vá» address(0)
+
+--- PHáº¦N B: XĂC THá»°C CĂC Báº¢N VĂ AUDIT Cá»¦A NHĂ“M 9 (REMEDIATION VERIFICATION) ---
+       -> Náº¡p: 0.005 ETH -> Thu phĂ­: 0.001 ETH -> HoĂ n tráº£ tá»©c thĂ¬: 0.004 ETH
+[PASS] TC-LAB14-10: [REMEDIATION 1] Tá»± Ä‘á»™ng hoĂ n tráº£ pháº§n ETH náº¡p thá»«a cho sinh viĂªn
+       -> Cháº·n thĂ nh cĂ´ng má»©c phĂ­ 0.1 ETH vá»›i lá»—i: FeeExceedsLimit(100000000000000000, 50000000000000000)
+[PASS] TC-LAB14-11: [REMEDIATION 3] Cháº·n admin Ä‘áº·t phĂ­ vÆ°á»£t tráº§n MAX_REGISTRATION_FEE (0.05 ETH)
+       -> Kiá»ƒm chá»©ng thĂ nh cĂ´ng lá»—i phĂ¢n quyá»n cá»§a NhĂ³m báº¡n vĂ  Ä‘á» xuáº¥t báº£n vĂ¡
+[PASS] TC-LAB14-12: [PEER AUDIT] Kiá»ƒm chá»©ng phĂ¡t hiá»‡n lá»—i trĂªn há»£p Ä‘á»“ng NhĂ³m báº¡n (PeerCertificateRegistry)
+
+================================================================================
+   Káº¾T QUáº¢ KIá»‚M THá»¬ LAB 14: 12/12 ca kiá»ƒm thá»­ THĂ€NH CĂ”NG (100%)       
+   Chuáº©n Ä‘áº§u ra Lab 14: Äáº T YĂU Cáº¦U TUYá»†T Äá»I                                  
+================================================================================
+================================================================================
+   LAB 15 â€” KIá»‚M THá»¬ TĂCH Há»¢P WEB DAPP & XĂC THá»°C PHáº¦N Má»€M (PROJECTCORE)        
+   Há»c pháº§n: ECO2432 - Tiá»n Ä‘iá»‡n tá»­ & Há»£p Ä‘á»“ng thĂ´ng minh (Äáº¡i há»c Huáº¿ - HUE)   
+================================================================================
+
+--- BÆ¯á»C 1: KIá»‚M TRA Äá»’NG Bá»˜ ABI VĂ€ GIAO DIá»†N WEB DAPP ---
+       -> ÄĂ£ Ä‘á»‘i chiáº¿u: 100% hĂ m cá»‘t lĂµi cĂ³ máº·t trong ABI giao diá»‡n
+[PASS] TC-LAB15-01: [ABI SYNC] Tá»‡p web/index.html chá»©a Ä‘áº§y Ä‘á»§ hĂ m Ä‘á»c vĂ  hĂ m ghi cá»§a ProjectCore.sol
+
+--- BÆ¯á»C 2: KIá»‚M THá»¬ THUáº¬T TOĂN BÄ‚M Táº I MĂY KHĂCH (CLIENT-SIDE HASHING) ---
+       -> MĂ£ bÄƒm sinh ra táº¡i mĂ¡y khĂ¡ch: 0x4f5b8d92af8e438ec913fa3fdbabd6a0934538fb04154888e88ed48b1d3d8f20
+[PASS] TC-LAB15-02: [CLIENT HASHING] Sinh mĂ£ bÄƒm SHA-256 Ä‘Ăºng chuáº©n 32 bytes (66 kĂ½ tá»± hex) tá»« file máº«u
+       -> Hash 1: 0x4a21b6159cbfa1ff7f2c5a781727de710b3776e5064ee8a7bf4344e96af2c2f6
+       -> Hash 2: 0xc8b90dc6a9df6b92aa6747f18fe69d29636407e7346ba8d7c64c7804a194f4e1
+[PASS] TC-LAB15-03: [AVALANCHE EFFECT] Hiá»‡u á»©ng tuyáº¿t lá»Ÿ: Äá»•i 1 kĂ½ tá»± ná»™i dung lĂ m thay Ä‘á»•i 100% mĂ£ bÄƒm
+
+--- BÆ¯á»C 3: KIá»‚M THá»¬ Báº®T Lá»–I GIAO Dá»CH THĂ‚N THIá»†N (USER-FRIENDLY ERROR MAPPING) ---
+       -> ThĂ´ng bĂ¡o: "Lá»—i quy táº¯c kinh táº¿: Báº¡n chÆ°a gá»­i Ä‘á»§ phĂ­ Ä‘Äƒng kĂ½ (báº¯t buá»™c 0.001 ETH)!"
+[PASS] TC-LAB15-04: [ERROR - FEE] Báº¯t lá»—i náº¡p thiáº¿u phĂ­ dá»‹ch vá»¥ vĂ  dá»‹ch sang tiáº¿ng Viá»‡t
+       -> ThĂ´ng bĂ¡o: "TĂ i liá»‡u nĂ y Ä‘Ă£ tá»“n táº¡i trĂªn Blockchain! MĂ£ bÄƒm SHA-256 Ä‘Ă£ Ä‘Æ°á»£c má»™t tĂ¡c giáº£ khĂ¡c Ä‘Äƒng kĂ½ trÆ°á»›c Ä‘Ă³."
+[PASS] TC-LAB15-05: [ERROR - COLLISION] Báº¯t lá»—i Ä‘Äƒng kĂ½ trĂ¹ng mĂ£ bÄƒm cá»§a Ä‘á» tĂ i khĂ¡c
+       -> ThĂ´ng bĂ¡o: "Lá»—i phĂ¢n quyá»n: Báº¡n khĂ´ng pháº£i Quáº£n trá»‹ viĂªn cá»§a há»£p Ä‘á»“ng!"
+[PASS] TC-LAB15-06: [ERROR - PERMISSION] Báº¯t lá»—i máº¡o danh khĂ´ng pháº£i Quáº£n trá»‹ viĂªn
+       -> ThĂ´ng bĂ¡o: "Báº¡n Ä‘Ă£ tá»« chá»‘i kĂ½ xĂ¡c nháº­n giao dá»‹ch trĂªn vĂ­ MetaMask."
+[PASS] TC-LAB15-07: [ERROR - METAMASK REJECT] Báº¯t lá»—i ngÆ°á»i dĂ¹ng há»§y kĂ½ trĂªn vĂ­ MetaMask
+
+--- BÆ¯á»C 4: KIá»‚M TRA TĂNH NÄ‚NG VĂ€ CĂC THáºº ID CHO THIáº¾T Bá» DI Äá»˜NG ---
+       -> Äáº£m báº£o 100% tháº» id cá»§a JavaScript vĂ  Media Query cho Ä‘iá»‡n thoáº¡i
+[PASS] TC-LAB15-08: [MOBILE & TAG IDS] Äáº£m báº£o Ä‘áº§y Ä‘á»§ cĂ¡c tháº» id quan trá»ng khĂ´ng bá»‹ Ä‘á»•i tĂªn
+
+================================================================================
+   Káº¾T QUáº¢ KIá»‚M THá»¬ LAB 15: 8/8 ca kiá»ƒm thá»­ THĂ€NH CĂ”NG (100%)       
+   Chuáº©n Ä‘áº§u ra Lab 15: Äáº T YĂU Cáº¦U TUYá»†T Äá»I                                  
+================================================================================

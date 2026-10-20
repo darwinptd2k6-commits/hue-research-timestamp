@@ -1,0 +1,27 @@
+================================================================================
+   LAB 11 — KIỂM THỬ QUY TẮC KINH TẾ VÀO SẢN PHẨM (PROJECTCORE.SOL)             
+   Học phần: ECO2432 - Tiền điện tử & Hợp đồng thông minh (Đại học Huế - HUE)   
+================================================================================
+
+--- BƯỚC 4: KIỂM THỬ QUY TẮC KINH TẾ (LAB 11 REQUIREMENT) ---
+
+       -> Minh chứng: Số dư hợp đồng = 1000000000000000 wei (0.001 ETH)
+       -> Event FeeCollected: payer=0x1111111111111111111111111111111111111111, amount=1000000000000000
+[PASS] TC-LAB11-01 [HAPPY PATH]: Đăng ký thành công khi nạp đủ 0.001 ETH phí dịch vụ
+       -> Bị chặn bởi Custom Error: InsufficientFee(1000000000000000, 500000000000000)
+[PASS] TC-LAB11-02 [VIOLATION]: Giao dịch bị chặn khi nạp thiếu phí (chỉ gửi 0.0005 ETH)
+[PASS] TC-LAB11-03 [EDGE CASE]: Giao dịch bị chặn khi nạp 0 ETH (Cố tình spam miễn phí)
+       -> Bị chặn bởi Custom Error: HashAlreadyExists("0xa1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0", 1792046579)
+[PASS] TC-LAB11-04 [MALICIOUS]: Ngăn chặn kẻ gian ăn cắp ý tưởng: Đăng ký trùng mã băm đã có
+       -> Bị chặn bởi Custom Error: OwnableUnauthorizedAccount("0x6666666666666666666666666666666666666666")
+[PASS] TC-LAB11-05 [UNAUTHORIZED]: Chặn người lạ tự ý thay đổi mức phí dịch vụ của hợp đồng
+       -> Mức phí mới: 2000000000000000 wei (0.002 ETH)
+[PASS] TC-LAB11-06 [GOVERNANCE]: Quản trị viên (Đại học Huế) cập nhật mức phí mới thành công
+       -> Đã chuyển 1000000000000000 wei đến ví Quỹ: 0x8888888888888888888888888888888888888888
+       -> Số dư hợp đồng sau khi rút: 0 wei
+[PASS] TC-LAB11-07 [TREASURY CEI]: Rút quỹ doanh thu dịch vụ an toàn về ví Quỹ NCKH Đại học Huế
+
+================================================================================
+   KẾT QUẢ KIỂM THỬ LAB 11: 7/7 ca kiểm thử THÀNH CÔNG (100%)       
+   Chuẩn đầu ra Lab 11: ĐẠT YÊU CẦU TUYỆT ĐỐI                                  
+================================================================================
