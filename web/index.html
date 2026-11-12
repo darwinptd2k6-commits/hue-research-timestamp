@@ -616,7 +616,7 @@
 
       <div class="form-group">
         <label for="contractAddressInput">Địa chỉ Smart Contract (`ProjectCore`):</label>
-        <input type="text" id="contractAddressInput" value="0x71C8F79720f4C7e74a68C838Fdfd3d4b68019688" style="font-family: monospace;">
+        <input type="text" id="contractAddressInput" value="0x644F6b33Ee5adE8D90F62A5D18a3BBEE288862a6" style="font-family: monospace;">
         <p class="hint-text">Mặc định: Địa chỉ đã triển khai chính thức của nhóm trên Sepolia Testnet.</p>
       </div>
 
@@ -666,18 +666,35 @@ let signer = null;
 let contract = null;
 let currentHash = "";
 
-// Lấy địa chỉ contract từ localStorage nếu có
-let CONTRACT_ADDRESS = localStorage.getItem("HRT_CONTRACT_ADDRESS") || "0x71C8F79720f4C7e74a68C838Fdfd3d4b68019688";
+// Chuẩn hóa địa chỉ hợp đồng theo EIP-55 (tránh lỗi bad address checksum)
+function normalizeAddress(addr) {
+  try {
+    return ethers.getAddress((addr || "").trim().toLowerCase());
+  } catch (e) {
+    return (addr || "").trim();
+  }
+}
+
+// Luôn đồng bộ với địa chỉ hợp đồng ProjectCore đã triển khai chính thức trên Sepolia
+const DEPLOYED_CONTRACT_ADDRESS = "0x644F6b33Ee5adE8D90F62A5D18a3BBEE288862a6";
+let storedAddr = localStorage.getItem("HRT_CONTRACT_ADDRESS");
+if (!storedAddr || storedAddr.toLowerCase().includes("71c8")) {
+  localStorage.setItem("HRT_CONTRACT_ADDRESS", DEPLOYED_CONTRACT_ADDRESS);
+  storedAddr = DEPLOYED_CONTRACT_ADDRESS;
+}
+let CONTRACT_ADDRESS = normalizeAddress(storedAddr);
 document.getElementById("contractAddressInput").value = CONTRACT_ADDRESS;
 
 function saveContractAddress() {
   const addr = document.getElementById("contractAddressInput").value.trim();
-  if (!ethers.isAddress(addr)) {
+  const normalized = normalizeAddress(addr);
+  if (!ethers.isAddress(normalized)) {
     showStatus("configStatus", "Địa chỉ hợp đồng không hợp lệ (phải bắt đầu bằng 0x và dài 42 ký tự)!", "error");
     return;
   }
-  CONTRACT_ADDRESS = addr;
-  localStorage.setItem("HRT_CONTRACT_ADDRESS", addr);
+  CONTRACT_ADDRESS = normalized;
+  document.getElementById("contractAddressInput").value = CONTRACT_ADDRESS;
+  localStorage.setItem("HRT_CONTRACT_ADDRESS", CONTRACT_ADDRESS);
   if (signer) {
     contract = new ethers.Contract(CONTRACT_ADDRESS, PROJECT_CORE_ABI, signer);
   }
@@ -703,6 +720,12 @@ function showStatus(elementId, text, type) {
 // Bắt lỗi Custom Error thân thiện cho người dùng theo đúng Sổ tay Lab 15 Bước 2
 function parseFriendlyError(err) {
   const raw = (err.shortMessage || err.reason || err.message || "").toString();
+  if (raw.includes("missing revert data")) {
+    return "Lỗi thực thi giao dịch: Hãy kiểm tra chắc chắn ví MetaMask đang chọn mạng Sepolia Testnet!";
+  }
+  if (raw.includes("bad address checksum")) {
+    return "Lỗi địa chỉ hợp đồng: Địa chỉ trong tab Cấu hình viết hoa/thường sai chuẩn EIP-55!";
+  }
   if (raw.includes("InsufficientFee")) {
     return "Lỗi quy tắc kinh tế: Bạn chưa gửi đủ phí đăng ký (bắt buộc 0.001 ETH)!";
   }
@@ -784,6 +807,18 @@ document.getElementById("btnConnect").onclick = async () => {
     const network = await provider.getNetwork();
     document.getElementById("networkName").textContent = (network.name && network.name !== "unknown") ? network.name : `Chain ID ${network.chainId}`;
 
+    // Tự động kiểm tra và yêu cầu chuyển sang mạng Sepolia nếu người dùng đang ở mạng khác
+    if (network.chainId !== 11155111n) {
+      try {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: "0xaa36a7" }]
+        });
+      } catch (switchErr) {
+        console.warn("Chưa tự chuyển mạng được:", switchErr);
+      }
+    }
+
     contract = new ethers.Contract(CONTRACT_ADDRESS, PROJECT_CORE_ABI, signer);
     btn.innerHTML = `<span>✅</span> <span>Đã kết nối</span>`;
     btn.classList.replace("btn-primary", "btn-secondary");
@@ -823,7 +858,8 @@ async function registerDocument() {
     showStatus("regStatus", "Vui lòng xác nhận giao dịch trên cửa sổ MetaMask...", "info");
 
     const tx = await contract.registerDocument(currentHash, title, authors, metadata, {
-      value: ethers.parseEther(feeEther)
+      value: ethers.parseEther(feeEther),
+      gasLimit: 1200000n
     });
 
     btn.innerHTML = `<span class="spinner"></span> Đang chờ thợ đào đóng khối...`;
@@ -852,7 +888,7 @@ async function verifyDocument() {
   }
 
   // Dùng provider kết nối hoặc fallback Sepolia public RPC nếu chưa kết nối ví
-  const queryProvider = provider || new ethers.JsonRpcProvider("https://rpc.sepolia.org");
+  const queryProvider = provider || new ethers.JsonRpcProvider("https://ethereum-sepolia-rpc.publicnode.com");
   const readContract = new ethers.Contract(CONTRACT_ADDRESS, PROJECT_CORE_ABI, queryProvider);
 
   try {
